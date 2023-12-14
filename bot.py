@@ -1,70 +1,108 @@
 """
-Телеграм-бот с сохранением информации о пользователях.
-Лото с номерами дипломатических машин и мигалок АМР97
+2023-12-14 @Fil
+Телеграм-бот Визитка Александра Сергеевича
+Fil FC Визитка Пушкина
+fil_fc_pushkin_bot
+6886396528:AAHO-KXXB5NS63pKaBAnIIh1wkPrEPd10X8
+https://t.me/fil_fc_pushkin_bot
 """
 
 from telebot import TeleBot
+from telebot.types import KeyboardButton, ReplyKeyboardMarkup, Message
+from answers import get_answers_deti, get_answers_photo, answers_pushkin
+import random
 import time
 
 
-class User:
-    def __init__(self, uid: int):
-        self.uid = uid
-        self.name = ""
-        self.age = 0
+random.seed(time.time())
 
-    def print(self):
-        print(f"name = '{self.name}', age = {self.age}")
+TOKEN = "6886396528:AAHO-KXXB5NS63pKaBAnIIh1wkPrEPd10X8"
+bot = TeleBot(TOKEN)
 
-
-class UserData:
-    def __init__(self):
-        # словарь из пользователей в виде классов
-        self.Users = {}
-        pass
-
-    def get_user_by_uid(self, uid: int):
-        if uid in self.Users.keys():
-            return self.Users[uid]
-        else:
-            return False
-
-    def add_user(self, uid: int):
-        if not self.get_user_by_uid(uid):
-            new_user = User(uid)
-            self.Users[uid] = new_user
-            return uid
-        else:
-            return False
-
-    def modify_user_name(self, uid: int, new_name: str):
-        one_user = self.get_user_by_uid(uid)
-        if not one_user:
-            return False
-        else:
-            one_user.name = new_name
-            return one_user
+markup = ReplyKeyboardMarkup(
+    row_width=2,
+    resize_keyboard=True)
+markup.add(* ["❓ Расскажи о себе",
+              "🖼 Скинь фотку",
+              "✍ Как делишки?",
+              "👶 Как детишки?",
+              "✴️ Поделись клёвой рифмой?",
+              "🆘 ПАМАГИТЕ"])
 
 
-Lotto = UserData()
-for i in range(5):
-    Lotto.add_user(i)
+# Здороваемся, говорим кратко о возможностях бота
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in ['памаги', 'помоги', 'ыефке', 'руддщ', 'рудз']),
+    content_types=["text"])
+@bot.message_handler(
+    commands=["start", "hello", "help"])
+def handle_start(message: Message):
+    bot.send_message(
+        message.chat.id,
+        "Привѣтъ! Я - виртуальный Пушкинъ. "
+        "Со всѣмъ уваженіемъ къ настоящему!\n\n"
+        "Могу немного разсказать о себѣ /about\n"
+        "Вотъ-съ свѣжіе дагеротипы изъ салона /photo\n"
+        "Охотно подѣлюсь новостями о дѣтяхъ /deti\n"
+        "Могу подѣлиться знатной риѳмой /rhyme"
+    )
 
-# print(Lotto)
-# print(Lotto.Users)
-Lotto.get_user_by_uid(1).print()
-
-for i in range(5):
-    Lotto.modify_user_name(i, "Cake " + str(i ** 3))
-    Lotto.get_user_by_uid(i).print()
+    bot.send_message(message.chat.id,
+                     "Самые частые вопросы:",
+                     reply_markup=markup)
 
 
-#TODO считываем файл с данными пользователей, не удаляя содержимое
+# Случайный факт о детях Пушкина. Подгружается из списка во внешнем файле
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in ['о себе', 'кто ты']),
+    content_types=["text"])
+@bot.message_handler(
+    commands=["about"])
+def handle_about(message: Message):
+    for phrase in answers_pushkin:
+        bot.send_message(
+            message.chat.id,
+            phrase,
+            parse_mode="HTML",
+            reply_markup=markup)
 
 
+# Случайный факт о детях Пушкина. Подгружается из списка во внешнем файле
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in [' дет', 'вуеш']),
+    content_types=["text"])
+@bot.message_handler(commands=["deti"])
+def handle_deti(message: Message):
+    bot.send_message(
+        message.chat.id,
+        get_answers_deti() +
+        "\n\n<i>Кстати, это факты от нейросети! Ошибка на ошибке!</i>",
+        parse_mode="HTML",
+        reply_markup=markup)
 
 
-TOKEN = ""
-# bot = TeleBot(TOKEN)
+# Оправляем фотку Пушкина
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in [' фот', 'картин']),
+    content_types=["text"])
+@bot.message_handler(commands=["photo"])
+def handle_photo(message: Message):
+    picture = open(f"photo/{random.randint(1, 25)}.webp", 'rb')
+    bot.send_photo(
+        message.chat.id,
+        picture,
+        caption=get_answers_photo(),
+        reply_markup=markup
+    )
 
-# bot.polling()
+
+print(TOKEN)
+bot.polling()
