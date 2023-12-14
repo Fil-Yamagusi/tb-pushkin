@@ -9,7 +9,9 @@ https://t.me/fil_fc_pushkin_bot
 
 from telebot import TeleBot
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup, Message
-from answers import get_answers_deti, get_answers_photo, answers_pushkin
+from answers import (get_answers_photo, get_answers_deti,
+                     get_answers_dela, get_answers_rhyme,
+                     answers_pushkin)
 import random
 import time
 
@@ -41,20 +43,21 @@ markup.add(* ["❓ Расскажи о себе",
 def handle_start(message: Message):
     bot.send_message(
         message.chat.id,
-        "Привѣтъ! Я - виртуальный Пушкинъ. "
+        "Привѣтъ, " +
+        message.chat.first_name +
+        "! 🤝\nЯ - виртуальный Пушкинъ.\n"
         "Со всѣмъ уваженіемъ къ настоящему!\n\n"
         "Могу немного разсказать о себѣ /about\n"
         "Вотъ-съ свѣжіе дагеротипы изъ салона /photo\n"
+        "Новости о дѣлахъ насущныхъ /dela\n"
         "Охотно подѣлюсь новостями о дѣтяхъ /deti\n"
-        "Могу подѣлиться знатной риѳмой /rhyme"
+        "Могу подѣлиться знатной риѳмой /rhyme\n\n"
+        "Вспомнить cии повелнiя: /help",
+        reply_markup=markup
     )
 
-    bot.send_message(message.chat.id,
-                     "Самые частые вопросы:",
-                     reply_markup=markup)
 
-
-# Случайный факт о детях Пушкина. Подгружается из списка во внешнем файле
+# Краткая биография великого поэта. Спасибо нейросети
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
@@ -69,6 +72,39 @@ def handle_about(message: Message):
             phrase,
             parse_mode="HTML",
             reply_markup=markup)
+
+
+# Оправляем фотку Пушкина
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in [' фот', 'картин']),
+    content_types=["text"])
+@bot.message_handler(commands=["photo"])
+def handle_photo(message: Message):
+    with open(f"photo/{random.randint(1, 25)}.webp", 'rb') as photo:
+        bot.send_photo(
+            message.chat.id,
+            photo,
+            caption=get_answers_photo(),
+            reply_markup=markup
+        )
+
+
+# Случайная новость о делах Пушкина. Подгружается из списка во внешнем файле
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in [' дел', 'вудф']),
+    content_types=["text"])
+@bot.message_handler(commands=["dela"])
+def handle_dela(message: Message):
+    bot.send_message(
+        message.chat.id,
+        get_answers_dela() +
+        "\n\n<i>За творческие новости спасибо нейросети.</i>",
+        parse_mode="HTML",
+        reply_markup=markup)
 
 
 # Случайный факт о детях Пушкина. Подгружается из списка во внешнем файле
@@ -87,22 +123,25 @@ def handle_deti(message: Message):
         reply_markup=markup)
 
 
-# Оправляем фотку Пушкина
+# Случайная прикольная рифма. Подгружается из списка во внешнем файле
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
-        for word in [' фот', 'картин']),
+        for word in [' рифм', ' зарифм', 'крнь']),
     content_types=["text"])
-@bot.message_handler(commands=["photo"])
-def handle_photo(message: Message):
-    picture = open(f"photo/{random.randint(1, 25)}.webp", 'rb')
-    bot.send_photo(
+@bot.message_handler(commands=["rhyme"])
+def handle_deti(message: Message):
+    bot.send_message(
         message.chat.id,
-        picture,
-        caption=get_answers_photo(),
-        reply_markup=markup
-    )
+        get_answers_rhyme(),
+        parse_mode="HTML",
+        reply_markup=markup)
 
 
 print(TOKEN)
-bot.polling()
+while True:
+    try:
+        bot.polling(none_stop=True)
+    except Exception as _ex:
+        print(_ex)
+        time.sleep(5)
