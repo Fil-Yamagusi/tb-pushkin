@@ -48,7 +48,7 @@ def handle_start(message: Message):
         "! 🤝\nЯ - виртуальный Пушкинъ.\n"
         "Со всѣмъ уваженіемъ къ настоящему!\n\n"
         "Могу немного разсказать о себѣ /about\n"
-        "Вотъ-съ свѣжіе дагеротипы изъ салона /photo\n"
+        "Вот-съ свѣжія дагеротипы изъ салона /photo\n"
         "Новости о дѣлахъ насущныхъ /dela\n"
         "Охотно подѣлюсь новостями о дѣтяхъ /deti\n"
         "Могу подѣлиться знатной риѳмой /rhyme\n\n"
@@ -78,7 +78,7 @@ def handle_about(message: Message):
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
-        for word in [' фот', 'картин']),
+        for word in ['фото', 'фотк', 'картин']),
     content_types=["text"])
 @bot.message_handler(commands=["photo"])
 def handle_photo(message: Message):
@@ -95,7 +95,7 @@ def handle_photo(message: Message):
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
-        for word in [' дел', 'вудф']),
+        for word in ['дела', 'делиш', 'вудф']),
     content_types=["text"])
 @bot.message_handler(commands=["dela"])
 def handle_dela(message: Message):
@@ -111,7 +111,7 @@ def handle_dela(message: Message):
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
-        for word in [' дет', 'вуеш']),
+        for word in ['дети', 'детя', 'детк', 'вуеш']),
     content_types=["text"])
 @bot.message_handler(commands=["deti"])
 def handle_deti(message: Message):
@@ -127,13 +127,32 @@ def handle_deti(message: Message):
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
-        for word in [' рифм', ' зарифм', 'крнь']),
+        for word in ['рифм', 'зарифм', 'крнь']),
     content_types=["text"])
 @bot.message_handler(commands=["rhyme"])
-def handle_deti(message: Message):
+def handle_rhyme(message: Message):
     bot.send_message(
         message.chat.id,
         get_answers_rhyme(),
+        parse_mode="HTML",
+        reply_markup=markup)
+
+
+# Для наставника
+@bot.message_handler(commands=["description"])
+def handle_description(message: Message):
+    bot.send_message(
+        message.chat.id,
+        "Кроме команд, бот ответит и на сообщения. Например:\n"
+        "/start = /hello = /help = "
+        "['памаги', 'помоги', 'ыефке', 'руддщ', 'рудз']\n"
+        "/about = ['о себе', 'кто ты']\n"
+        "/photo = ['фото', 'фотк', 'картин']\n"
+        "/dela = ['дела', 'делиш', 'вудф']\n"
+        "/deti = ['дети', 'детя', 'детк', 'вуеш']\n"
+        "/rhyme = ['рифм', 'зарифм', 'крнь']\n\n"
+        "Бот может показать не тот раздел, если несколько слов найдёт в фразе,"
+        "зато на словоформы и простые опечатки старается ответить.",
         parse_mode="HTML",
         reply_markup=markup)
 
