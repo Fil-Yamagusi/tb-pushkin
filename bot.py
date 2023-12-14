@@ -4,7 +4,11 @@
 """
 
 from telebot import TeleBot
+import time
 
-bot = TeleBot
+# считываем файл с данными пользователей
+ud_file = open("userdata.txt", "w+")
+
+bot = TeleBot()
 
 bot.polling()
