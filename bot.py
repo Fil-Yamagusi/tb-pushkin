@@ -7,13 +7,14 @@ fil_fc_pushkin_bot
 https://t.me/fil_fc_pushkin_bot
 """
 
+import random
+import time
+
 from telebot import TeleBot
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup, Message
 from answers import (get_answers_photo, get_answers_deti,
                      get_answers_dela, get_answers_rhyme,
                      answers_pushkin)
-import random
-import time
 
 
 random.seed(time.time())
@@ -151,8 +152,11 @@ def handle_description(message: Message):
         "/dela = ['дела', 'делиш', 'вудф']\n"
         "/deti = ['дети', 'детя', 'детк', 'вуеш']\n"
         "/rhyme = ['рифм', 'зарифм', 'крнь']\n\n"
-        "Бот может показать не тот раздел, если несколько слов найдёт в фразе,"
-        "зато на словоформы и простые опечатки старается ответить.",
+        "Бот может показать не тот раздел, если несколько ключевых слов найдёт"
+        " во фразе, зато на словоформы и простые опечатки старается ответить:\n"
+        "<i>зарифмуй чё-нить?</i>\n"
+        "<i>что делаешь?</i>\n"
+        "<i>расскажи о семье, о детях?</i>\n",
         parse_mode="HTML",
         reply_markup=markup)
 
