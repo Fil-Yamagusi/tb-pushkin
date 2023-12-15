@@ -7,14 +7,15 @@ fil_fc_pushkin_bot
 https://t.me/fil_fc_pushkin_bot
 """
 
-import random
 import time
+import random
+import re
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 from telebot import TeleBot
-from telebot.types import KeyboardButton, ReplyKeyboardMarkup, Message
-from answers import (get_answers_photo, get_answers_deti,
-                     get_answers_dela, get_answers_rhyme,
-                     answers_pushkin)
+from telebot.types import ReplyKeyboardMarkup, Message
+from answers import *
 
 
 random.seed(time.time())
@@ -37,11 +38,12 @@ markup.add(* ["❓ Расскажи о себе",
 @bot.message_handler(
     func=lambda message:
     any(word in message.text.lower()
-        for word in ['памаги', 'помоги', 'ыефке', 'руддщ', 'рудз']),
+        for word in ['памаги', 'помоги', 'помощ', 'ыефке', 'руддщ', 'рудз']),
     content_types=["text"])
 @bot.message_handler(
     commands=["start", "hello", "help"])
 def handle_start(message: Message):
+    """ Функция с подсказками """
     bot.send_message(
         message.chat.id,
         "Привѣтъ, " +
@@ -67,6 +69,7 @@ def handle_start(message: Message):
 @bot.message_handler(
     commands=["about"])
 def handle_about(message: Message):
+    """ Функция с биографией поэта """
     for phrase in answers_pushkin:
         bot.send_message(
             message.chat.id,
@@ -83,7 +86,9 @@ def handle_about(message: Message):
     content_types=["text"])
 @bot.message_handler(commands=["photo"])
 def handle_photo(message: Message):
-    with open(f"photo/{random.randint(1, 25)}.webp", 'rb') as photo:
+    """ Функция со случайными фото """
+    ext = ['.webp', '.jpg'][random.randint(0, 1)]
+    with open(f"photo/{random.randint(1, 25)}{ext}", 'rb') as photo:
         bot.send_photo(
             message.chat.id,
             photo,
@@ -100,6 +105,7 @@ def handle_photo(message: Message):
     content_types=["text"])
 @bot.message_handler(commands=["dela"])
 def handle_dela(message: Message):
+    """ Функция со случайными делами (типа твиты) """
     bot.send_message(
         message.chat.id,
         get_answers_dela() +
@@ -116,6 +122,7 @@ def handle_dela(message: Message):
     content_types=["text"])
 @bot.message_handler(commands=["deti"])
 def handle_deti(message: Message):
+    """ Функция со случайными фразочками о детях """
     bot.send_message(
         message.chat.id,
         get_answers_deti() +
@@ -132,6 +139,7 @@ def handle_deti(message: Message):
     content_types=["text"])
 @bot.message_handler(commands=["rhyme"])
 def handle_rhyme(message: Message):
+    """ Функция со случайными рифмами """
     bot.send_message(
         message.chat.id,
         get_answers_rhyme(),
@@ -142,6 +150,7 @@ def handle_rhyme(message: Message):
 # Для наставника
 @bot.message_handler(commands=["description"])
 def handle_description(message: Message):
+    """ Функция с пояснениями для наставника """
     bot.send_message(
         message.chat.id,
         "Кроме команд, бот ответит и на сообщения. Например:\n"
@@ -161,10 +170,97 @@ def handle_description(message: Message):
         reply_markup=markup)
 
 
+# Тут пытаюсь подобрать рифмы. Но вдруг нам дают русские слова без рифм?
+@bot.message_handler(
+    func=lambda message:
+    any(word in message.text.lower()
+        for word in [
+            'туловище', 'жаворонок', 'восемьдесят', 'выхухоль',
+            'заморозки', 'набережная', 'пользователь', 'проволока']),
+    content_types=["text"])
+def handle_no_rhymes(message: Message):
+    """ Редкая функция: хвалим настойчивых искателей рифм """
+    bot.send_message(
+        message.chat.id,
+        "Сударь или сударыня!\n\n"
+        "Поражён вашей настойчивостью или удачей!\n"
+        "Вы предлагаете мне найти рифму к слову, которое по мнению "
+        "некоторых поэтов вообще не имеет достойной рифмы!\n\n"
+        "Так держать! Во славу русской поэзии! Deus vult!",
+        parse_mode="HTML",
+        reply_markup=markup)
+
+
+# Обработка невыясненных команд
+@bot.message_handler(content_types=["text"])
+def handle_error(message: Message):
+    """ Функция с ответом на абсолютно непонятные фразы пользователя """
+    words = message.text.lower().split()
+    has_russian_word = False
+    find_word = ""
+    vowels = list('аяуюоёэеыи')
+
+    for word in reversed(words):
+        if len(word) < 3:
+            continue
+        if not any(char in vowels for char in word):
+            continue
+        if bool(re.fullmatch(r'(?i)[а-яё ]+', word)):
+            has_russian_word = True
+            find_word = word
+            break
+
+    if has_russian_word:
+        bot.reply_to(
+            message,
+            f"{find_word}, {find_word}... хмм...\n"
+            f"Попробую зарифмовать! Где моя тетрадь с рифмами...",
+            parse_mode="HTML",
+            reply_markup=markup)
+
+        url = "https://rifmovka.ru/rifma/{0}#similar".format(quote(find_word))
+        # print(url)
+        request_site = Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        try:
+            webpage = urlopen(request_site).read().decode('utf-8')
+            webpage = re.sub(r'<b>', '', webpage)
+            webpage = re.sub(r'</b>', '', webpage)
+            # pattern = "<meta name=\"description\" content=\"(.*): (.*)\">"
+            pattern = r'<li class="vis [a-z]+" data-id="\d+">(.+)</li>'
+            match = re.findall(pattern, webpage)
+
+            if match:
+                rhymes = match
+                for r in rhymes:
+                    if len(r) > 12:
+                        rhymes.remove(r)
+                random.shuffle(rhymes)
+                rhymes = rhymes[0:7]
+                answ = f"Зацени рифмы: <b>{find_word}</b> - {', '.join(rhymes)}"
+            else:
+                answ = f"Не могу найти рифму к слову <b>{find_word}</b> 🧐"
+
+            bot.send_message(
+                message.chat.id,
+                answ,
+                parse_mode="HTML",
+                reply_markup=markup)
+
+        except Exception as ex:
+            print(ex)
+    else:
+        bot.send_message(
+            message.chat.id,
+            "Mon ami, je ne te comprends pas!\n\n"
+            "Помощь тебе в помощь! /help",
+            parse_mode="HTML",
+            reply_markup=markup)
+
+
 print(TOKEN)
 while True:
     try:
         bot.polling(none_stop=True)
-    except Exception as _ex:
-        print(_ex)
+    except Exception as ex:
+        print(ex)
         time.sleep(5)
