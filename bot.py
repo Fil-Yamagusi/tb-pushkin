@@ -1,10 +1,11 @@
+#!/usr/bin/python
 """
-2023-12-14 @Fil
-Телеграм-бот Визитка Александра Сергеевича
-Fil FC Визитка Пушкина
-fil_fc_pushkin_bot
-6886396528:AAHO-KXXB5NS63pKaBAnIIh1wkPrEPd10X8
-https://t.me/fil_fc_pushkin_bot
+    2023-12-14 @Fil
+    Телеграм-бот Визитка Александра Сергеевича
+    Fil FC Визитка Пушкина
+    fil_fc_pushkin_bot
+    6886396528:AAHO-KXXB5NS63pKaBAnIIh1wkPrEPd10X8
+    https://t.me/fil_fc_pushkin_bot
 """
 
 import time
