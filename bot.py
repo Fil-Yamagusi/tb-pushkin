@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
 """
     2023-12-14 @Fil
     Телеграм-бот Визитка Александра Сергеевича
