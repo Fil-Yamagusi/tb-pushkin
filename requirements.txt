@@ -1,5 +1,100 @@
-time
-random
-re
-urllib
-telebot
+У меня уже есть https://masterhost.ru/hosting/ , а именно:
+https://masterhost.ru/hosting/v4/
+Если у вас есть хостинг, вам дают доступ в личный кабинет.
+
+Дома компьютер windows, доступ к файлам на сервер по FTP через программу Far.
+FTP Логин-пароль в личном кабинете хостинга.
+
+Я зачем-то старался разместить бота в папку с доменом. хаха.
+Разумеется, домен не нужен, мы же запускать будем не через браузер.
+
+Для работы в консоли сервера нужен доступ SSH. Я использовал встроенную в windows программу OpenSSH, а SSH логин-пароль в личном кабинете хостинга.
+Следующие действия описывают работу в консоли.
+
+На тот момент были установлены такие версии Питона:
+$ whereis python
+python: /usr/bin/python2.7 /usr/bin/python3.7 /usr/bin/python3.5 /usr/bin/python3.5m /usr/bin/python3.7m /usr/bin/python /usr/lib/python2.7 /usr/lib/python3.7 /usr/lib/python3.5 /etc/python3.5 /etc/python /etc/python2.7 /etc/python3.7 /usr/local/lib/python2.7 /usr/local/lib/python3.7 /usr/local/lib/python3.5 /usr/share/python /usr/share/man/man1/python.1.gz
+Более свежие можно поставить по запросу в техподдержку. Их же попросить, чтобы просто python (без чисел) вызывал самую свежую версию
+
+Про модули ответ техподдержки: 
+Дополнительная установка модулей для python на shared-хостинге не предусмотрена, но попробовать выполнить установку можно через pip. Ставите pip, добавляете директорию в path и далее с помощью pip ставите нужный модуль:
+Установка pip: https://pip.pypa.io/en/stable/installing/
+
+Я зашёл, там ссылка на большой файл get-pip.py, через FTP (Far) закинул его в любое место хостинга, там запустил командой:
+python3.7 get-pip.py
+(версия такая потому что это самая свежая версия питона на хостинге на тот момент, см. выше)
+после установки вышли такие надписи:
+ WARNING: The scripts pip, pip3 and pip3.7 are installed in '/home/u9259/.local/bin' which is not on PATH.
+ Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+нужно добавить путь с pip в переменную PATH (об этом было и в ответе техподдержки)
+Добавил командой:
+export PATH=$PATH:/home/u9259/.local/bin
+здесь именно мой путь (взял из сообщения установщика pip). Вдруг у вас другой.
+
+После этого установил модуль telebot, ради которого всё и затевалось:
+python3.7 -m pip install --user telebot
+
+После чего положил все файлы с ботом в папку tb/tb-vcard
+и запустил командой:
+python3.7 bot.py
+
+Хостинг не грозится принудительно останавливать скрипты. Посмотрим, сколько продержится.
+Если будут проблемы, то придётся добавить в расписание принудительный перезапуск, но не хотелось бы.
+
+
+ВОЗМОЖНО, python будет ругаться про non-ASCII символы (у нас же в боте полно смайликов).
+На всякий случай в самую верхнюю строчку bot.py добавил:
+# -*- coding: utf-8 -*-
+
+
+Для бота, вроде, достаточно.
+Если потом делать скрипт с доступом через браузер, то будет ещё возня:
+в начале скриптов добавлять строки типа:
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+print("Content-Type: text/html;charset=utf-8\n")
+
+В редакторе PyCharm в настройках сделать:
+File -> File properties -> Line separators -> LF (Unix and mac os \n)
+
+а в папке с файлами сайта поправить файл .htaccess:
+AddHandler cgi-script .py
+
+
+
+
+Добавил в .htaccess строку "AddHandler cgi-script .py". Теперь правильные скрипты будут открываться через браузер. Проверить можно по ссылке http://tsimmerman.ru/hw3.py
+
+$ whereis python
+python: /usr/bin/python2.7 /usr/bin/python3.7 /usr/bin/python3.5 /usr/bin/python3.5m /usr/bin/python3.7m /usr/bin/python /usr/lib/python2.7 /usr/lib/python3.7 /usr/lib/python3.5 /etc/python3.5 /etc/python /etc/python2.7 /etc/python3.7 /usr/local/lib/python2.7 /usr/local/lib/python3.7 /usr/local/lib/python3.5 /usr/share/python /usr/share/man/man1/python.1.gz
+
+Дополнительная установка модулей для python на shared-хостинге не предусмотрена, но попробовать выполнить установку можно через pip. Ставите pip, добавляете директорию в path и далее с помощью pip ставите нужный модуль:
+
+Установка pip:
+https://pip.pypa.io/en/stable/installing/
+
+Установка модуля:
+https://docs.python.org/3/installing/index.html
+
+
+По заявке  можем установить локально для вашей площадки нужную версию python.
+
+По данному вопросу оставьте заявку на свободную тему из личного кабинета в разделе "Заявки и распоряжения" - "Заявка на свободную тему" в отдел "Техподдержка виртуального хостинга". 
+Ответ по заявке поступит на Вашу контактную почту. 
+Заявки обрабатываются в течение суток в порядке очереди.
+
+/home/u9259/.local/lib/python3.7/site-packages/pip
+WARNING: The script normalizer is installed in '/home/u9259/.local/bin' which is not on PATH.
+PATH=$PATH:/home/u9259/.local/bin
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+
+$ whereis python
+Прошу установить последнюю стабильную версию. Кажется, сейчас это 3.12.1
+
+На данный момент последняя версия на моей площадке - 3.7, кроме неё ещё много разных. Причём по команде python вызывается не самая последняя - 2.7.13
+
+Если возможно, удалите предыдущие версии? И/или чтобы по имени python вызывалась именно последняя версия (не хочется привязываться в скриптах и кронтабе к конкретным номерам.
+
+Никакие пользовательские скрипты сейчас с питоном не работают. Готов не переустановку в любое время.
+
+"...Нет, весь я не умру! Душа в заветной лире мой прах переживёт и тленья убежит!"
