@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 """
     2023-12-14 @Fil
@@ -57,7 +57,7 @@ def handle_start(message: Message):
         "Новости о дѣлахъ насущныхъ /dela\n"
         "Охотно подѣлюсь новостями о дѣтяхъ /deti\n"
         "Могу подѣлиться знатной риѳмой /rhyme\n\n"
-        "Вспомнить cии повелнiя: /help",
+        "Вспомнить cии повеленiя: /help",
         reply_markup=markup
     )
 
