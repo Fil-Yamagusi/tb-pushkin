@@ -224,29 +224,31 @@ def handle_error(message: Message):
         # print(url)
         request_site = Request(url, headers={"User-Agent": "Mozilla/5.0"})
         try:
-            webpage = urlopen(request_site).read().decode('utf-8')
-            webpage = re.sub(r'<b>', '', webpage)
-            webpage = re.sub(r'</b>', '', webpage)
-            # pattern = "<meta name=\"description\" content=\"(.*): (.*)\">"
-            pattern = r'<li class="vis [a-z]+" data-id="\d+">(.+)</li>'
-            match = re.findall(pattern, webpage)
+            with urlopen(request_site).read().decode('utf-8') as webpage:
+                webpage = re.sub(r'<b>', '', webpage)
+                webpage = re.sub(r'</b>', '', webpage)
+                # pattern = "<meta name=\"description\" content=\"(.*): (.*)\">"
+                pattern = r'<li class="vis [a-z]+" data-id="\d+">(.+)</li>'
+                match = re.findall(pattern, webpage)
 
-            if match:
-                rhymes = match
-                for r in rhymes:
-                    if len(r) > 12:
-                        rhymes.remove(r)
-                random.shuffle(rhymes)
-                rhymes = rhymes[0:7]
-                answ = f"Зацени рифмы: <b>{find_word}</b> - {', '.join(rhymes)}"
-            else:
-                answ = f"Не могу найти рифму к слову <b>{find_word}</b> 🧐"
+                if match:
+                    rhymes = match
+                    for r in rhymes:
+                        if len(r) > 12:
+                            rhymes.remove(r)
+                    random.shuffle(rhymes)
+                    rhymes = rhymes[0:7]
+                    answ = (f"Зацени рифмы: <b>{find_word}</b> "
+                            f"- {', '.join(rhymes)}")
+                else:
+                    answ = (f"Не могу найти рифму к слову "
+                            f"<b>{find_word}</b> 🧐")
 
-            bot.send_message(
-                message.chat.id,
-                answ,
-                parse_mode="HTML",
-                reply_markup=markup)
+                bot.send_message(
+                    message.chat.id,
+                    answ,
+                    parse_mode="HTML",
+                    reply_markup=markup)
 
         except Exception as ex:
             print(ex)
@@ -265,4 +267,4 @@ while True:
         bot.polling(none_stop=True)
     except Exception as ex:
         print(ex)
-        time.sleep(5)
+        time.sleep(10)
